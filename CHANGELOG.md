@@ -6,6 +6,12 @@ The format follows [Keep a Changelog 1.1.0](https://keepachangelog.com/en/1.1.0/
 
 ## [Unreleased]
 
+## [2.1.0] - 2026-11-20
+
+### Added
+
+- `[InspectorGroupLabel("...")]` shows a dimmed label at the top of an `[ExportGroup]` or `[ExportSubgroup]` section. Put it on the same member as the group attribute.
+
 ## [2.0.0] - 2026-11-20
 
 ### Changed
@@ -35,7 +41,8 @@ The format follows [Keep a Changelog 1.1.0](https://keepachangelog.com/en/1.1.0/
 - Headless checks (`tests/InspectorDescriptionChecks.tscn`) and a GitHub Actions workflow that runs them with Godot 4.7.2 .NET.
 - MIT license, and English and Chinese README files.
 
-[Unreleased]: https://github.com/EstellaNines/godot-csharp-inspector-description/compare/v2.0.0...HEAD
+[Unreleased]: https://github.com/EstellaNines/godot-csharp-inspector-description/compare/v2.1.0...HEAD
+[2.1.0]: https://github.com/EstellaNines/godot-csharp-inspector-description/compare/v2.0.0...v2.1.0
 [2.0.0]: https://github.com/EstellaNines/godot-csharp-inspector-description/compare/v1.1.0...v2.0.0
 [1.1.0]: https://github.com/EstellaNines/godot-csharp-inspector-description/compare/v1.0.0...v1.1.0
 [1.0.0]: https://github.com/EstellaNines/godot-csharp-inspector-description/releases/tag/v1.0.0

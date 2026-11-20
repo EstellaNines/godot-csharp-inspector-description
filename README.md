@@ -16,6 +16,7 @@ English | [简体中文](README.zh-CN.md)
 - `[InspectorLabel("...")]` shows a dimmed label above an exported C# property or field.
 - `[InspectorTooltip("...")]` shows its text in Godot's native hover tooltip, the same place GDScript `##` comments appear.
 - Use either attribute alone, or both on the same member.
+- `[InspectorGroupLabel("...")]` shows a dimmed label at the top of an `[ExportGroup]` or `[ExportSubgroup]` section.
 - Works for private fields, members inherited from a base class, grouped and subgrouped members, members of `Resource` objects, and nodes that the editor shows as placeholders.
 - Godot's default editors (number, color, enum, resource and node pickers) are kept. The plugin changes only the tooltip and adds the label above the editor.
 - The editor part is compiled only when `TOOLS` is defined, which Godot's Debug build configuration does. The attributes themselves are small runtime classes that game code references.
@@ -59,6 +60,7 @@ public partial class Player : CharacterBody2D
 	private float _moveSpeed = 200.0f;
 
 	[ExportGroup("Combat")]
+	[InspectorGroupLabel("Combat stats of the character.")]
 	// Label only: no tooltip on hover.
 	[Export]
 	[InspectorLabel("Damage per basic attack.")]
@@ -72,7 +74,7 @@ public partial class Player : CharacterBody2D
 
 - **Private fields** work, as `_moveSpeed` shows above.
 - **Inherited members** work. A private field declared in a base class is found from the derived class. An override without its own attribute of a given kind reuses the base class member's attribute of that kind.
-- **Groups and subgroups** (`[ExportGroup]`, `[ExportSubgroup]`) do not change the lookup.
+- **Groups and subgroups** (`[ExportGroup]`, `[ExportSubgroup]`) do not change the lookup of `[InspectorLabel]` and `[InspectorTooltip]`. To label a group, put `[InspectorGroupLabel("...")]` on the same member as `[ExportGroup]` or `[ExportSubgroup]`; its text appears dimmed at the top of that group.
 - **Resources** work too. Descriptions appear inside an expanded resource in the Inspector:
 
 ```csharp
@@ -103,6 +105,7 @@ Version 2.0.0 replaces `[InspectorDescription]` with two attributes. This is a b
 3. `EditorInspector::update_tree` in `editor/inspector/editor_inspector.cpp` sets each property's tooltip to `property|<class>|<name>`. That symbol is looked up in the engine documentation, which has no entry for a C# script, so Godot shows no text.
 4. One frame later, if there is a tooltip, the plugin sets it to `local_variable|<class>|<name>|{"description": "..."}`. `EditorHelpBit::parse_symbol` in `editor/doc/editor_help.cpp` reads `description` from that JSON, so the native tooltip shows the text.
 5. `InspectorDescriptions.Find<T>` starts at the class and walks up `BaseType`. `ResolveType` returns the script class for a real instance. For editor placeholders (a script that is not `[Tool]` is shown as a placeholder), it reads the script path from `GetScript()` and finds the script class through the `ScriptPathAttribute` that the Godot source generator adds to each script class.
+6. Group labels use `DescriptionInspectorPlugin._ParseGroup`. Godot calls it for each new section with the full path (`Group` or `Group/Subgroup`), so a subgroup's call also carries its parent group's path. The plugin records the section paths it has seen, per object, in `_ParseBegin`, clears them in `_ParseCategory`, and labels only the first unseen section. `InspectorDescriptions.FindGroupLabel` finds the `[InspectorGroupLabel]` text for it.
 
 The engine references above were checked against the Godot `4.7.2-stable` source. The tooltip route is used because `EditorInspector::add_custom_property_description` exists in 4.7.2 but is not exposed to scripts, and `CSharpScript.get_doc_class_name()` still returns an empty name (a `TODO` in the engine).
 
@@ -112,6 +115,7 @@ The engine references above were checked against the Godot `4.7.2-stable` source
 - It depends on Godot 4.7 editor internals: the tooltip symbol format and the order of `update_tree`. Re-check the demo after each Godot upgrade.
 - Attribute text is read from the built assembly. After you change a label or tooltip, or add a script, build the project and select the node again (or reopen the scene).
 - Members are matched by their exact C# name. If you rename a member, update its attributes.
+- Group labels match a group or subgroup by name. If two subgroups in one class have the same name, the label of the first one found is used.
 - If another Inspector plugin also takes over the same property, the plugin order decides which editor is used.
 - If an Inspector has documentation hints turned off, hovering shows the raw symbol text instead of the tooltip.
 - Known quirk: if a described property is added to **Favorites**, its label stays at the original position while the editor moves to the Favorites section. This follows from the engine code (`EditorInspector::update_tree`); it has not been checked in the editor.

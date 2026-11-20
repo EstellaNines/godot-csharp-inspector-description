@@ -16,6 +16,7 @@
 - `[InspectorLabel("...")]` 在导出的 C# 属性或字段上方显示淡色标签。
 - `[InspectorTooltip("...")]` 将文字显示在 Godot 原生的悬停提示框中，提示框的位置与 GDScript `##` 注释相同。
 - 两个特性可以单独使用，也可以同时用在同一个成员上。
+- `[InspectorGroupLabel("...")]` 在 `[ExportGroup]` 或 `[ExportSubgroup]` 分组的顶部显示淡色标签。
 - 支持私有字段、基类继承的成员、分组与子分组中的成员、`Resource` 对象的成员，以及编辑器中显示为 placeholder 的节点。
 - Godot 默认编辑器（数值、颜色、枚举、资源与节点选择器）保持不变。插件只改变提示框的内容，并在编辑器上方加入说明标签。
 - 编辑器部分只在定义 `TOOLS` 时编译，Godot 的 Debug 构建配置会定义它。特性本身是小型运行时类，游戏代码需要引用它们。
@@ -59,6 +60,7 @@ public partial class Player : CharacterBody2D
 	private float _moveSpeed = 200.0f;
 
 	[ExportGroup("Combat")]
+	[InspectorGroupLabel("角色的战斗属性。")]
 	// 仅标签：悬停时不显示提示框。
 	[Export]
 	[InspectorLabel("一次普通攻击造成的伤害。")]
@@ -72,7 +74,7 @@ public partial class Player : CharacterBody2D
 
 - **私有字段**可以标注，如上面的 `_moveSpeed`。
 - **继承的成员**可以查到。基类中声明的私有字段也能从派生类中找到。派生类重写成员但没有某一类自己的特性时，沿用基类成员中同类特性的说明。
-- **分组与子分组**（`[ExportGroup]`、`[ExportSubgroup]`）不影响查找。
+- **分组与子分组**（`[ExportGroup]`、`[ExportSubgroup]`）不影响 `[InspectorLabel]` 与 `[InspectorTooltip]` 的查找。要为分组加标签，请把 `[InspectorGroupLabel("...")]` 与 `[ExportGroup]` 或 `[ExportSubgroup]` 标在同一个成员上；其文字会以淡色显示在该分组顶部。
 - **Resource** 同样支持。展开资源后，其中的属性也会显示说明：
 
 ```csharp
@@ -103,6 +105,7 @@ public partial class DamageStats : Resource
 3. `editor/inspector/editor_inspector.cpp` 中的 `EditorInspector::update_tree` 会把每个属性的提示设为 `property|<类>|<属性>`。引擎文档库中没有 C# 脚本的条目，因此 Godot 原生提示为空。
 4. 若存在提示，插件延迟一帧，把提示改写为 `local_variable|<类>|<属性>|{"description": "..."}`。`editor/doc/editor_help.cpp` 中的 `EditorHelpBit::parse_symbol` 会从该 JSON 读取 `description`，于是原生提示框显示文字。
 5. `InspectorDescriptions.Find<T>` 从类开始，沿 `BaseType` 逐级向上查找。对于真实实例，`ResolveType` 直接返回脚本类。对于编辑器中的 placeholder（非 `[Tool]` 脚本显示为 placeholder），它通过 `GetScript()` 取得脚本路径，再借助 Godot 源码生成器为每个脚本类附加的 `ScriptPathAttribute` 找到脚本类。
+6. 分组标签使用 `DescriptionInspectorPlugin._ParseGroup`。Godot 为每个新建的 section 调用一次，传入完整路径（`Group` 或 `Group/Subgroup`），因此子分组的调用也会带上其父分组的路径。插件在 `_ParseBegin` 中按对象记录已见过的 section 路径，在 `_ParseCategory` 中清空，并且只为第一个未见过的 section 加标签。`InspectorDescriptions.FindGroupLabel` 负责查找对应的 `[InspectorGroupLabel]` 文字。
 
 以上引擎引用已对照 Godot `4.7.2-stable` 源码核实。之所以采用提示框方案，是因为 `EditorInspector::add_custom_property_description` 在 4.7.2 中存在，但没有向脚本公开；而 `CSharpScript.get_doc_class_name()` 仍返回空名称（引擎中的 `TODO`）。
 
@@ -112,6 +115,7 @@ public partial class DamageStats : Resource
 - 依赖 Godot 4.7 编辑器的内部实现：提示符号格式与 `update_tree` 的调用顺序。每次升级 Godot 后都应重新检查 demo。
 - 特性文字从构建产物中读取。修改标签或提示、或新增脚本后，请先构建项目，再重新选中节点（或重新打开场景）。
 - 成员按 C# 名称精确匹配。重命名成员后，请同步修改特性。
+- 分组标签按名称匹配分组或子分组。同一个类中若有两个同名子分组，使用先找到的那个的标签。
 - 若其他 Inspector 插件也接管同一属性，由插件的先后顺序决定使用哪个编辑器。
 - 若某个 Inspector 关闭了文档提示（`use_doc_hints`），悬停时显示的是原始符号文本，而不是提示内容。
 - 已知的小问题：若带说明的属性被加入**收藏（Favorites）**，标签仍留在原位置，而编辑器会移到收藏区。这一点是根据引擎源码推断的，尚未在编辑器中验证。

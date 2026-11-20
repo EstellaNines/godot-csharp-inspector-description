@@ -1,6 +1,6 @@
 # C# Inspector Description
 
-Shows `[InspectorLabel("...")]` text as a dimmed label above C# exported properties and fields, and `[InspectorTooltip("...")]` text in their Inspector hover tooltip, the way GDScript `##` doc comments do. Use either one or both.
+Shows `[InspectorLabel("...")]` text as a dimmed label above C# exported properties and fields, and `[InspectorTooltip("...")]` text in their Inspector hover tooltip, the way GDScript `##` doc comments do. Use either one or both. `[InspectorGroupLabel("...")]` puts a dimmed label at the top of an export group.
 
 ## Install
 
@@ -18,6 +18,15 @@ using Godot;
 [InspectorLabel("Maximum health points.")]
 [InspectorTooltip("Maximum health points the character can have. Healing never goes above it.")]
 public int MaxHealth { get; set; } = 100;
+```
+
+Put `[InspectorGroupLabel]` on the same member as `[ExportGroup]` or `[ExportSubgroup]` to label that group:
+
+```csharp
+[ExportGroup("Combat")]
+[InspectorGroupLabel("Combat stats of the character.")]
+[Export]
+public int AttackDamage { get; set; } = 10;
 ```
 
 Build the project again after you change a description, then select the node again.

@@ -29,6 +29,8 @@ public partial class InspectorDescriptionChecks : Node
 	private const string TintText = "Tint color for this example node.";
 	private const string TargetText = "Node path to ../PlaceholderNode, set in the scene file.";
 	private const string SensitivityText = "Reaction speed scale, shown inside the Tuning subgroup.";
+	private const string CombatGroupText = "Combat stats of the character.";
+	private const string TuningGroupText = "Reaction tuning values for this node.";
 
 	public override void _Ready()
 	{
@@ -94,6 +96,12 @@ public partial class InspectorDescriptionChecks : Node
 		CheckText(typeof(DescriptionNode2DDemo), "Sensitivity", SensitivityText, "Node2D subgroup text");
 		CheckText(typeof(DescriptionNode2DDemo), "Layer", null, "Node2D undescribed member has no text");
 		CheckText(typeof(DescriptionNode2DDemo), "Position", null, "Inherited Node2D Position has no text");
+
+		// Group labels: a group name on ExportGroup, a bare subgroup name (no group), and an unknown name.
+		Check(InspectorDescriptions.FindGroupLabel(typeof(DescriptionDemo), "Combat") == CombatGroupText, "Group label text");
+		Check(InspectorDescriptions.FindGroupLabel(typeof(DescriptionNode2DDemo), "Tuning") == TuningGroupText, "Subgroup label text");
+		Check(InspectorDescriptions.FindGroupLabel(typeof(DescriptionDemo), "NoSuchGroup") == null, "Unknown group has no label");
+		Check(InspectorDescriptions.FindGroupLabel(typeof(DescriptionDemo), "Tuning") == null, "Subgroup name does not match a group");
 	}
 
 	// Adds the scene to the tree so NodePath references resolve, as they do when run with F6.

@@ -1,4 +1,4 @@
-// Finds InspectorLabel and InspectorTooltip attributes on members of C# Godot scripts.
+// Finds InspectorLabel, InspectorGroupLabel and InspectorTooltip attributes on members of C# Godot scripts.
 using System;
 using System.Collections.Generic;
 using System.Reflection;
@@ -7,7 +7,7 @@ using Godot;
 namespace CSharpInspectorDescription;
 
 /// <summary>
-/// Looks up Inspector attributes for members of C# Godot scripts.
+/// Looks up Inspector attributes for members of C# Godot scripts, including group labels.
 /// </summary>
 public static class InspectorDescriptions
 {
@@ -41,6 +41,42 @@ public static class InspectorDescriptions
 			if (attribute != null)
 			{
 				return attribute;
+			}
+		}
+
+		return null;
+	}
+
+	/// <summary>Returns the InspectorGroupLabel text of the export group or subgroup at sectionPath, or null.</summary>
+	public static string FindGroupLabel(Type type, string sectionPath)
+	{
+		if (type == null || string.IsNullOrEmpty(sectionPath))
+		{
+			return null;
+		}
+
+		// Subgroup paths are "Group/Subgroup"; a bare name is a group, or a subgroup with no group.
+		// ponytail: two subgroups with the same name match the first one found.
+		int slash = sectionPath.LastIndexOf('/');
+		string name = sectionPath.Substring(slash + 1);
+		for (Type current = type; current != null; current = current.BaseType)
+		{
+			foreach (MemberInfo member in current.GetMembers(MemberFlags))
+			{
+				InspectorGroupLabelAttribute label = member.GetCustomAttribute<InspectorGroupLabelAttribute>(false);
+				if (label == null)
+				{
+					continue;
+				}
+
+				string declared = slash >= 0
+					? member.GetCustomAttribute<ExportSubgroupAttribute>(false)?.Name
+					: member.GetCustomAttribute<ExportGroupAttribute>(false)?.Name
+						?? member.GetCustomAttribute<ExportSubgroupAttribute>(false)?.Name;
+				if (declared == name)
+				{
+					return label.Text;
+				}
 			}
 		}
 

@@ -21,6 +21,7 @@ public partial class DescriptionDemo : DescriptionDemoBase
 	public int Level { get; set; } = 1;
 
 	[ExportGroup("Combat")]
+	[InspectorGroupLabel("Combat stats of the character.")]
 	[Export]
 	[InspectorLabel("Damage dealt by one basic attack.")]
 	[InspectorTooltip("Damage dealt by one basic attack.")]

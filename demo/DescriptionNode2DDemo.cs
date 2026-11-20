@@ -33,6 +33,7 @@ public partial class DescriptionNode2DDemo : Node2D
 	public int Layer { get; set; }
 
 	[ExportSubgroup("Tuning")]
+	[InspectorGroupLabel("Reaction tuning values for this node.")]
 	[Export]
 	[InspectorLabel("Reaction speed scale, shown inside the Tuning subgroup.")]
 	[InspectorTooltip("Reaction speed scale, shown inside the Tuning subgroup.")]
