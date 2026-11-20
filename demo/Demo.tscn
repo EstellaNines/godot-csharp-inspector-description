@@ -1,0 +1,62 @@
+[gd_scene load_steps=8 format=3]
+
+[ext_resource type="Script" path="res://demo/DescriptionDemo.cs" id="1_placeholder"]
+[ext_resource type="Script" path="res://demo/DescriptionToolDemo.cs" id="2_tool"]
+[ext_resource type="Script" path="res://demo/DescriptionNode2DDemo.cs" id="3_node2d"]
+[ext_resource type="Script" path="res://demo/DescriptionResource.cs" id="4_resource"]
+[ext_resource type="Resource" path="res://demo/sample.tres" id="5_sample"]
+[ext_resource type="Script" path="res://demo/gdscript_compare.gd" id="6_gdscript"]
+
+[sub_resource type="Resource" id="Resource_inline"]
+script = ExtResource("4_resource")
+BaseDamage = 40
+
+[node name="InspectorDescriptionScene" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="PlaceholderNode" type="Node" parent="."]
+script = ExtResource("1_placeholder")
+MaxHealth = 150
+AttackDamage = 25
+
+[node name="ToolNode" type="Node" parent="."]
+script = ExtResource("2_tool")
+ToolPriority = 3
+ToolScale = 2.5
+ToolLabel = "Scene example"
+
+[node name="Node2DHolder" type="Node2D" parent="."]
+script = ExtResource("3_node2d")
+Stats = ExtResource("5_sample")
+Difficulty = 2
+Tint = Color(0.4, 0.8, 1, 1)
+Target = NodePath("../PlaceholderNode")
+Sensitivity = 1.5
+
+[node name="InlineResourceHolder" type="Node2D" parent="."]
+script = ExtResource("3_node2d")
+Stats = SubResource("Resource_inline")
+
+[node name="GDScriptCompare" type="Node" parent="."]
+script = ExtResource("6_gdscript")
+max_health = 120
+move_speed = 300.0
+
+[node name="Guide" type="Label" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 24.0
+offset_top = 24.0
+offset_right = -24.0
+offset_bottom = -24.0
+grow_horizontal = 2
+grow_vertical = 2
+autowrap_mode = 3
+text = "Inspector manual checklist (select each node below in turn, then hover the mouse over the property name for about one second)\n1. PlaceholderNode (DescriptionDemo, not Tool): hovering MaxHealth, _moveSpeed, AttackDamage, AttackCooldown and _respawnLimit should show a description. Level has no plugin description. Changing values, undo and reset-to-default should all work.\n2. ToolNode (DescriptionToolDemo, [Tool]): hovering ToolPriority, ToolScale and ToolLabel should show a description. ToolActive has no plugin description.\n3. Node2DHolder (DescriptionNode2DDemo): hovering Stats, Difficulty, Tint, Target and Sensitivity should show a description. Layer has no plugin description. Native properties such as Position and Rotation still show Godot's built-in documentation. Expand Stats and hover BaseDamage; it should show a description. The dropdown, color picker, node picker and resource picker should all work.\n4. InlineResourceHolder: Stats is an embedded resource. After expanding it, BaseDamage should be 40 and show a description on hover.\n5. GDScriptCompare (gdscript_compare.gd): hover max_health and move_speed to see Godot's native ## hint, and compare it with the C# descriptions.\nAfter changing an attribute's text, Build first, then select the node again."
