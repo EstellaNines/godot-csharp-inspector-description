@@ -1,0 +1,30 @@
+# Godot 4+ specific ignores
+.godot/
+/android/
+
+# Godot C# (Mono) temporary and crash files
+.mono/
+data_*/
+mono_crash.*.json
+
+# .NET build output
+bin/
+obj/
+
+# IDE and editor settings
+.vs/
+.vscode/
+.idea/
+*.user
+
+# Temporary files
+*.tmp
+
+# Export presets can store signing credentials and passwords, so keep them local.
+export_presets.cfg
+
+# Keep the project and solution files tracked. Some machines have a global ignore
+# rule for *.csproj and *.sln (for example a Unity or Unreal template); this repo's
+# .gitignore takes precedence over that global file, so the rule is overridden here.
+!/InspectorDescriptionDemo.csproj
+!/InspectorDescriptionDemo.sln

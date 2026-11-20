@@ -1,0 +1,53 @@
+# Build the demo project and run the headless inspector description checks.
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  GODOT_VERSION: 4.7.2-stable
+
+jobs:
+  checks:
+    name: Build and check (Godot 4.7.2 .NET)
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up .NET 8 SDK
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "8.x"
+
+      # Release asset name: Godot_v<version>_mono_linux_x86_64.zip (4.7.2-stable release).
+      - name: Download Godot .NET editor
+        run: |
+          set -euo pipefail
+          url="https://github.com/godotengine/godot/releases/download/${GODOT_VERSION}/Godot_v${GODOT_VERSION}_mono_linux_x86_64.zip"
+          curl -fsSL -o "$RUNNER_TEMP/godot.zip" "$url"
+          unzip -q "$RUNNER_TEMP/godot.zip" -d "$RUNNER_TEMP/godot"
+          godot_bin="$(find "$RUNNER_TEMP/godot" -type f -name "Godot_v${GODOT_VERSION}_mono_linux*" ! -name '*.zip' | head -n 1)"
+          test -n "$godot_bin"
+          chmod +x "$godot_bin"
+          echo "GODOT_BIN=$godot_bin" >> "$GITHUB_ENV"
+
+      - name: Build C# project
+        run: dotnet build InspectorDescriptionDemo.csproj --nologo
+
+      - name: Scan project in editor mode
+        run: |
+          "$GODOT_BIN" --headless --editor --path . --quit-after 600
+
+      - name: Run inspector description checks
+        run: |
+          set -o pipefail
+          "$GODOT_BIN" --headless --path . res://tests/InspectorDescriptionChecks.tscn | tee checks.log
+          grep -q "PASS: inspector description lookup." checks.log
