@@ -5,7 +5,7 @@ using Godot;
 namespace CSharpInspectorDescription;
 
 /// <summary>
-/// Shows InspectorDescription text in the native hover tooltip of each described property.
+/// Shows InspectorDescription text as a dimmed label above each described property and in its native hover tooltip.
 /// </summary>
 [Tool]
 public partial class DescriptionInspectorPlugin : EditorInspectorPlugin
@@ -60,6 +60,14 @@ public partial class DescriptionInspectorPlugin : EditorInspectorPlugin
 		}
 
 		string symbol = BuildTooltipSymbol(@object.GetClass(), name, text);
+
+		// The Inspector adds controls in call order, so the label must come before the editor.
+		AddCustomControl(new Label
+		{
+			Text = text,
+			AutowrapMode = TextServer.AutowrapMode.WordSmart,
+			Modulate = new Color(1, 1, 1, 0.6f),
+		});
 		AddPropertyEditor(name, editor);
 
 		// The Inspector resets tooltip_text right after adding the editor, so set ours one frame later.

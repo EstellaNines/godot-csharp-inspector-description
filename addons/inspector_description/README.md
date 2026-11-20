@@ -1,6 +1,6 @@
 # C# Inspector Description
 
-Shows `[InspectorDescription("...")]` text in the Inspector hover tooltip of C# exported properties and fields, the way GDScript `##` doc comments do.
+Shows `[InspectorDescription("...")]` text as a dimmed label above C# exported properties and fields, and in their Inspector hover tooltip, the way GDScript `##` doc comments do.
 
 ## Install
 

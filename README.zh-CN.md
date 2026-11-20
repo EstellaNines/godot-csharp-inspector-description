@@ -4,7 +4,7 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 ![Godot 4.7](https://img.shields.io/badge/Godot-4.7-478cbf?logo=godotengine&logoColor=white)
 
-让 C# 导出属性与字段在 Inspector 的悬停提示中显示说明，效果与 GDScript 的 `##` 文档注释相同。
+让 C# 导出属性与字段在 Inspector 中显示说明：属性上方显示淡色标签，悬停时的提示框中也显示同一段文字，效果与 GDScript 的 `##` 文档注释相同。
 
 [English](README.md) | 简体中文
 
@@ -14,9 +14,9 @@
 ## 功能
 
 - 为导出的 C# 属性和字段标注 `[InspectorDescription("...")]`。
-- 说明文字显示在 Godot 原生的悬停提示框中，与 GDScript `##` 注释的位置相同。
+- 说明文字以淡色标签显示在属性上方，并显示在 Godot 原生的悬停提示框中，提示框的位置与 GDScript `##` 注释相同。
 - 支持私有字段、基类继承的成员、分组与子分组中的成员、`Resource` 对象的成员，以及编辑器中显示为 placeholder 的节点。
-- 只改变提示框的内容。Godot 默认编辑器（数值、颜色、枚举、资源与节点选择器）保持不变。
+- Godot 默认编辑器（数值、颜色、枚举、资源与节点选择器）保持不变。插件只改变提示框的内容，并在编辑器上方加入说明标签。
 - 编辑器部分只在定义 `TOOLS` 时编译，Godot 的 Debug 构建配置会定义它。特性本身是一个小型运行时类，游戏代码需要引用它。
 
 ## 环境要求
@@ -86,7 +86,7 @@ public partial class DamageStats : Resource
 ## 工作原理
 
 1. `DescriptionInspectorPlugin` 为 Inspector 构建的每个属性调用 `InspectorDescriptions.Find`，查询说明。
-2. 查到说明时，插件通过 `EditorInspector.InstantiatePropertyEditor` 取得 Godot 原本就会创建的编辑器，再用 `AddPropertyEditor` 交给 Inspector。由于该调用会再次运行全部 Inspector 插件（包括本插件），插件用重入标志跳过这一次，避免无限递归。
+2. 查到说明时，插件通过 `EditorInspector.InstantiatePropertyEditor` 取得 Godot 原本就会创建的编辑器，再用 `AddPropertyEditor` 交给 Inspector。由于该调用会再次运行全部 Inspector 插件（包括本插件），插件用重入标志跳过这一次，避免无限递归。在调用 `AddPropertyEditor` 之前，插件还会用 `AddCustomControl` 加入一个淡色 `Label`。Inspector 按加入的先后顺序排列控件，因此标签位于编辑器上方。
 3. `editor/inspector/editor_inspector.cpp` 中的 `EditorInspector::update_tree` 会把每个属性的提示设为 `property|<类>|<属性>`。引擎文档库中没有 C# 脚本的条目，因此 Godot 原生提示为空。
 4. 插件延迟一帧，把提示改写为 `local_variable|<类>|<属性>|{"description": "..."}`。`editor/doc/editor_help.cpp` 中的 `EditorHelpBit::parse_symbol` 会从该 JSON 读取 `description`，于是原生提示框显示说明。
 5. `InspectorDescriptions.Find` 从对象的类型开始，沿 `BaseType` 逐级向上查找。对于编辑器中的 placeholder（非 `[Tool]` 脚本显示为 placeholder），它通过 `GetScript()` 取得脚本路径，再借助 Godot 源码生成器为每个脚本类附加的 `ScriptPathAttribute` 找到脚本类。
@@ -101,6 +101,7 @@ public partial class DamageStats : Resource
 - 成员按 C# 名称精确匹配。重命名成员后，请同步修改特性。
 - 若其他 Inspector 插件也接管同一属性，由插件的先后顺序决定使用哪个编辑器。
 - 若某个 Inspector 关闭了文档提示（`use_doc_hints`），悬停时显示的是原始符号文本，而不是说明。
+- 已知的小问题：若带说明的属性被加入**收藏（Favorites）**，标签仍留在原位置，而编辑器会移到收藏区。这一点是根据引擎源码推断的，尚未在编辑器中验证。
 
 ## Demo 工程
 
@@ -120,7 +121,7 @@ godot --headless --path . res://tests/InspectorDescriptionChecks.tscn
 
 请将 `godot` 替换为你本机 Godot .NET 编辑器的路径。检查通过时输出 `PASS: inspector description lookup.` 并以退出码 0 结束；失败时输出异常，并以退出码 1 结束。
 
-自动检查只覆盖查找逻辑，不覆盖提示框的渲染。提示框需在编辑器中结合 demo 手动确认。
+自动检查只覆盖查找逻辑，不覆盖提示框与标签的渲染。这两项需在编辑器中结合 demo 手动确认。
 
 `.github/workflows/ci.yml` 中的工作流会在 Ubuntu 上使用 Godot 4.7.2 .NET 执行相同的步骤。
 

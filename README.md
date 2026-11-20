@@ -4,7 +4,7 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 ![Godot 4.7](https://img.shields.io/badge/Godot-4.7-478cbf?logo=godotengine&logoColor=white)
 
-Show a description in the Inspector hover tooltip of C# exported properties and fields, the way GDScript `##` doc comments already work.
+Show a description above C# exported properties and fields as a dimmed label, and in their Inspector hover tooltip, the way GDScript `##` doc comments already work.
 
 English | [简体中文](README.zh-CN.md)
 
@@ -14,9 +14,9 @@ English | [简体中文](README.zh-CN.md)
 ## Features
 
 - `[InspectorDescription("...")]` for exported C# properties and fields.
-- The text appears in Godot's native hover tooltip, the same place GDScript `##` comments appear.
+- The text appears as a dimmed label above the property, and in Godot's native hover tooltip, the same place GDScript `##` comments appear.
 - Works for private fields, members inherited from a base class, grouped and subgrouped members, members of `Resource` objects, and nodes that the editor shows as placeholders.
-- Only the tooltip changes. Godot's default editors (number, color, enum, resource and node pickers) are kept.
+- Godot's default editors (number, color, enum, resource and node pickers) are kept. The plugin changes only the tooltip and adds the label above the editor.
 - The editor part is compiled only when `TOOLS` is defined, which Godot's Debug build configuration does. The attribute itself is a small runtime class that game code references.
 
 ## Requirements
@@ -86,7 +86,7 @@ public partial class DamageStats : Resource
 ## How it works
 
 1. `DescriptionInspectorPlugin` asks `InspectorDescriptions.Find` for a description of every property the Inspector builds.
-2. When there is a description, the plugin gets the editor Godot would create anyway from `EditorInspector.InstantiatePropertyEditor`, and passes it to the Inspector with `AddPropertyEditor`. A re-entrancy flag stops the recursion, because that call runs every Inspector plugin again, including this one.
+2. When there is a description, the plugin gets the editor Godot would create anyway from `EditorInspector.InstantiatePropertyEditor`, and passes it to the Inspector with `AddPropertyEditor`. A re-entrancy flag stops the recursion, because that call runs every Inspector plugin again, including this one. Before `AddPropertyEditor`, the plugin adds a dimmed `Label` with `AddCustomControl`. The Inspector adds controls in call order, so the label appears above the editor.
 3. `EditorInspector::update_tree` in `editor/inspector/editor_inspector.cpp` sets each property's tooltip to `property|<class>|<name>`. That symbol is looked up in the engine documentation, which has no entry for a C# script, so Godot shows no text.
 4. One frame later the plugin sets the tooltip to `local_variable|<class>|<name>|{"description": "..."}`. `EditorHelpBit::parse_symbol` in `editor/doc/editor_help.cpp` reads `description` from that JSON, so the native tooltip shows the text.
 5. `InspectorDescriptions.Find` starts at the object's class and walks up `BaseType`. For editor placeholders (a script that is not `[Tool]` is shown as a placeholder), it reads the script path from `GetScript()` and finds the script class through the `ScriptPathAttribute` that the Godot source generator adds to each script class.
@@ -101,6 +101,7 @@ The engine references above were checked against the Godot `4.7.2-stable` source
 - Members are matched by their exact C# name. If you rename a member, update its attribute.
 - If another Inspector plugin also takes over the same property, the plugin order decides which editor is used.
 - If an Inspector has documentation hints turned off, hovering shows the raw symbol text instead of the description.
+- Known quirk: if a described property is added to **Favorites**, its label stays at the original position while the editor moves to the Favorites section. This follows from the engine code (`EditorInspector::update_tree`); it has not been checked in the editor.
 
 ## Demo project
 
@@ -120,7 +121,7 @@ godot --headless --path . res://tests/InspectorDescriptionChecks.tscn
 
 Use the path to your Godot .NET editor binary in place of `godot`. A passing run prints `PASS: inspector description lookup.` and exits with code 0. A failure prints the exception and exits with code 1.
 
-The checks cover the lookup logic only. Tooltip rendering is not covered by them; check it in the editor with the demo.
+The checks cover the lookup logic only. Tooltip and label rendering are not covered by them; check them in the editor with the demo.
 
 The workflow in `.github/workflows/ci.yml` runs the same steps on Ubuntu with Godot 4.7.2 .NET.
 
