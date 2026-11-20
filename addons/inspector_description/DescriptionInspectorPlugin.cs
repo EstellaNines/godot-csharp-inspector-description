@@ -1,3 +1,4 @@
+// Inspector plugin that draws InspectorLabel labels and InspectorTooltip tooltips for C# members.
 #if TOOLS
 using System;
 using Godot;
@@ -5,7 +6,7 @@ using Godot;
 namespace CSharpInspectorDescription;
 
 /// <summary>
-/// Shows InspectorDescription text as a dimmed label above each described property and in its native hover tooltip.
+/// Shows InspectorLabel text dimmed above a property and InspectorTooltip text in its native hover tooltip.
 /// </summary>
 [Tool]
 public partial class DescriptionInspectorPlugin : EditorInspectorPlugin
@@ -25,10 +26,13 @@ public partial class DescriptionInspectorPlugin : EditorInspectorPlugin
 			return false;
 		}
 
-		string text;
+		string label;
+		string tooltip;
 		try
 		{
-			text = InspectorDescriptions.Find(@object, name);
+			Type scriptType = InspectorDescriptions.ResolveType(@object);
+			label = InspectorDescriptions.Find<InspectorLabelAttribute>(scriptType, name)?.Text;
+			tooltip = InspectorDescriptions.Find<InspectorTooltipAttribute>(scriptType, name)?.Text;
 		}
 		catch (Exception exception)
 		{
@@ -37,7 +41,7 @@ public partial class DescriptionInspectorPlugin : EditorInspectorPlugin
 			return false;
 		}
 
-		if (string.IsNullOrEmpty(text))
+		if (string.IsNullOrEmpty(label) && string.IsNullOrEmpty(tooltip))
 		{
 			return false;
 		}
@@ -46,7 +50,7 @@ public partial class DescriptionInspectorPlugin : EditorInspectorPlugin
 		_instantiating = true;
 		try
 		{
-			// Reuse the editor Godot would build itself, so only the tooltip changes.
+			// Reuse the editor Godot would build itself, so only the label and tooltip change.
 			editor = EditorInspector.InstantiatePropertyEditor(@object, type, name, hintType, hintString, (uint)usageFlags, wide);
 		}
 		finally
@@ -59,25 +63,31 @@ public partial class DescriptionInspectorPlugin : EditorInspectorPlugin
 			return false;
 		}
 
-		string symbol = BuildTooltipSymbol(@object.GetClass(), name, text);
-
 		// The Inspector adds controls in call order, so the label must come before the editor.
-		AddCustomControl(new Label
+		if (!string.IsNullOrEmpty(label))
 		{
-			Text = text,
-			AutowrapMode = TextServer.AutowrapMode.WordSmart,
-			Modulate = new Color(1, 1, 1, 0.6f),
-		});
+			AddCustomControl(new Label
+			{
+				Text = label,
+				AutowrapMode = TextServer.AutowrapMode.WordSmart,
+				Modulate = new Color(1, 1, 1, 0.6f),
+			});
+		}
 		AddPropertyEditor(name, editor);
 
-		// The Inspector resets tooltip_text right after adding the editor, so set ours one frame later.
-		Callable.From(() =>
+		if (!string.IsNullOrEmpty(tooltip))
 		{
-			if (GodotObject.IsInstanceValid(editor))
+			string symbol = BuildTooltipSymbol(@object.GetClass(), name, tooltip);
+
+			// The Inspector resets tooltip_text right after adding the editor, so set ours one frame later.
+			Callable.From(() =>
 			{
-				editor.TooltipText = symbol;
-			}
-		}).CallDeferred();
+				if (GodotObject.IsInstanceValid(editor))
+				{
+					editor.TooltipText = symbol;
+				}
+			}).CallDeferred();
+		}
 
 		return true;
 	}

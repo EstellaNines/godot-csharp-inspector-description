@@ -1,6 +1,6 @@
 # C# Inspector Description
 
-Shows `[InspectorDescription("...")]` text as a dimmed label above C# exported properties and fields, and in their Inspector hover tooltip, the way GDScript `##` doc comments do.
+Shows `[InspectorLabel("...")]` text as a dimmed label above C# exported properties and fields, and `[InspectorTooltip("...")]` text in their Inspector hover tooltip, the way GDScript `##` doc comments do. Use either one or both.
 
 ## Install
 
@@ -15,7 +15,8 @@ using CSharpInspectorDescription;
 using Godot;
 
 [Export]
-[InspectorDescription("Maximum health points the character can have.")]
+[InspectorLabel("Maximum health points.")]
+[InspectorTooltip("Maximum health points the character can have. Healing never goes above it.")]
 public int MaxHealth { get; set; } = 100;
 ```
 

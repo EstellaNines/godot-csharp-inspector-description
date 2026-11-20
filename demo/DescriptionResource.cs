@@ -8,6 +8,7 @@ using Godot;
 public partial class DescriptionResource : Resource
 {
 	[Export]
-	[InspectorDescription("Damage dealt per hit, before armor is applied.")]
+	[InspectorLabel("Damage dealt per hit, before armor is applied.")]
+	[InspectorTooltip("Damage dealt per hit, before armor is applied.")]
 	public int BaseDamage { get; set; } = 10;
 }

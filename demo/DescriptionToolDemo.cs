@@ -9,15 +9,18 @@ using Godot;
 public partial class DescriptionToolDemo : Node
 {
 	[Export]
-	[InspectorDescription("Example priority value. The node does not use it.")]
+	[InspectorLabel("Example priority value. The node does not use it.")]
+	[InspectorTooltip("Example priority value. The node does not use it.")]
 	public int ToolPriority { get; set; } = 1;
 
 	[Export(PropertyHint.Range, "0,4,0.5")]
-	[InspectorDescription("Example scale shown as a range. The node does not use it.")]
+	[InspectorLabel("Example scale shown as a range. The node does not use it.")]
+	[InspectorTooltip("Example scale shown as a range. The node does not use it.")]
 	public float ToolScale { get; set; } = 1.0f;
 
 	[Export]
-	[InspectorDescription("Example text for a string export.")]
+	[InspectorLabel("Example text for a string export.")]
+	[InspectorTooltip("Example text for a string export.")]
 	public string ToolLabel { get; set; } = "Editor example";
 
 	// Control case: no description, so no tooltip should appear.

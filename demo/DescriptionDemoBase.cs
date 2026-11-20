@@ -7,6 +7,7 @@ using Godot;
 public partial class DescriptionDemoBase : Node
 {
 	[Export]
-	[InspectorDescription("Lives granted when the player respawns, declared in the base class.")]
+	[InspectorLabel("Lives granted when the player respawns, declared in the base class.")]
+	[InspectorTooltip("Lives granted when the player respawns, declared in the base class.")]
 	private int _respawnLimit = 3;
 }

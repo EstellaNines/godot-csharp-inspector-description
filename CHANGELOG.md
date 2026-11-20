@@ -6,6 +6,18 @@ The format follows [Keep a Changelog 1.1.0](https://keepachangelog.com/en/1.1.0/
 
 ## [Unreleased]
 
+## [2.0.0] - 2026-11-20
+
+### Changed
+
+- **BREAKING:** `[InspectorDescription]` is split into `[InspectorLabel]` (dimmed label above the property) and `[InspectorTooltip]` (hover tooltip). Replace each `[InspectorDescription("x")]` with one or both of them.
+- **BREAKING:** `InspectorDescriptions.Find(obj, name)` returning a string is replaced by `Find<T>(Type, name)`, where `T` is `InspectorLabelAttribute` or `InspectorTooltipAttribute`. Get the `Type` with `InspectorDescriptions.ResolveType(obj)`.
+
+### Added
+
+- `[InspectorLabel]` and `[InspectorTooltip]` can be used alone or together on the same member.
+- `InspectorDescriptions.ResolveType(GodotObject)` returns the C# script class, including for editor placeholder instances.
+
 ## [1.1.0] - 2026-11-20
 
 ### Added
@@ -23,6 +35,7 @@ The format follows [Keep a Changelog 1.1.0](https://keepachangelog.com/en/1.1.0/
 - Headless checks (`tests/InspectorDescriptionChecks.tscn`) and a GitHub Actions workflow that runs them with Godot 4.7.2 .NET.
 - MIT license, and English and Chinese README files.
 
-[Unreleased]: https://github.com/EstellaNines/godot-csharp-inspector-description/compare/v1.1.0...HEAD
+[Unreleased]: https://github.com/EstellaNines/godot-csharp-inspector-description/compare/v2.0.0...HEAD
+[2.0.0]: https://github.com/EstellaNines/godot-csharp-inspector-description/compare/v1.1.0...v2.0.0
 [1.1.0]: https://github.com/EstellaNines/godot-csharp-inspector-description/compare/v1.0.0...v1.1.0
 [1.0.0]: https://github.com/EstellaNines/godot-csharp-inspector-description/releases/tag/v1.0.0

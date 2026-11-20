@@ -49,13 +49,13 @@ public partial class InspectorDescriptionChecks : Node
 	private static void CheckLookup()
 	{
 		// Described members on the demo class, including the private field inherited from its base.
-		Check(InspectorDescriptions.Find(typeof(DescriptionDemo), "MaxHealth") == MaxHealthText, "Public property text");
-		Check(InspectorDescriptions.Find(typeof(DescriptionDemo), "_moveSpeed") == MoveSpeedText, "Private field text");
-		Check(InspectorDescriptions.Find(typeof(DescriptionDemo), "AttackDamage") == AttackDamageText, "Grouped member text");
-		Check(InspectorDescriptions.Find(typeof(DescriptionDemo), "AttackCooldown") == AttackCooldownText, "Range property text");
-		Check(InspectorDescriptions.Find(typeof(DescriptionDemo), "_respawnLimit") == RespawnLimitText, "Inherited private field text");
-		Check(InspectorDescriptions.Find(typeof(DescriptionDemo), "Level") == null, "Undescribed member has no text");
-		Check(InspectorDescriptions.Find(typeof(DescriptionDemo), "NoSuchMember") == null, "Unknown member has no text");
+		CheckText(typeof(DescriptionDemo), "MaxHealth", MaxHealthText, "Public property text");
+		CheckText(typeof(DescriptionDemo), "_moveSpeed", MoveSpeedText, "Private field text");
+		CheckText(typeof(DescriptionDemo), "AttackDamage", AttackDamageText, "Grouped member text");
+		CheckText(typeof(DescriptionDemo), "AttackCooldown", AttackCooldownText, "Range property text");
+		CheckText(typeof(DescriptionDemo), "_respawnLimit", RespawnLimitText, "Inherited private field text");
+		CheckText(typeof(DescriptionDemo), "Level", null, "Undescribed member has no text");
+		CheckText(typeof(DescriptionDemo), "NoSuchMember", null, "Unknown member has no text");
 
 		Check(InspectorDescriptions.ResolveScriptType(DemoScriptPath) == typeof(DescriptionDemo), "Resolve demo script class");
 		Check(InspectorDescriptions.ResolveScriptType(ResourceScriptPath) == typeof(DescriptionResource), "Resolve resource script class");
@@ -63,7 +63,7 @@ public partial class InspectorDescriptionChecks : Node
 
 		// Real instance: GetType() already returns the script class.
 		DescriptionDemo demo = new DescriptionDemo();
-		Check(InspectorDescriptions.Find(demo, "MaxHealth") == MaxHealthText, "Real instance text");
+		CheckText(InspectorDescriptions.ResolveType(demo), "MaxHealth", MaxHealthText, "Real instance text");
 		demo.Free();
 
 		// Editor placeholders reach the class through GetScript().As<Script>().ResourcePath.
@@ -73,27 +73,27 @@ public partial class InspectorDescriptionChecks : Node
 
 		// Native node without a script: the lookup must return null without throwing.
 		Node plain = new Node();
-		Check(InspectorDescriptions.Find(plain, "MaxHealth") == null, "Plain node has no text");
+		CheckText(InspectorDescriptions.ResolveType(plain), "MaxHealth", null, "Plain node has no text");
 		plain.Free();
 
 		DescriptionResource sample = GD.Load<DescriptionResource>(SamplePath);
 		Check(sample != null, "Load sample resource");
-		Check(InspectorDescriptions.Find(sample, "BaseDamage") == BaseDamageText, "Resource instance text");
+		CheckText(InspectorDescriptions.ResolveType(sample), "BaseDamage", BaseDamageText, "Resource instance text");
 
 		// New script classes: described members, an undescribed control and a native Node2D name.
 		Check(InspectorDescriptions.ResolveScriptType(ToolScriptPath) == typeof(DescriptionToolDemo), "Resolve tool script class");
 		Check(InspectorDescriptions.ResolveScriptType(Node2DScriptPath) == typeof(DescriptionNode2DDemo), "Resolve Node2D script class");
-		Check(InspectorDescriptions.Find(typeof(DescriptionToolDemo), "ToolPriority") == ToolPriorityText, "Tool script text");
-		Check(InspectorDescriptions.Find(typeof(DescriptionToolDemo), "ToolScale") == ToolScaleText, "Tool script range text");
-		Check(InspectorDescriptions.Find(typeof(DescriptionToolDemo), "ToolLabel") == ToolLabelText, "Tool script string text");
-		Check(InspectorDescriptions.Find(typeof(DescriptionToolDemo), "ToolActive") == null, "Tool script undescribed member has no text");
-		Check(InspectorDescriptions.Find(typeof(DescriptionNode2DDemo), "Stats") == StatsText, "Node2D resource text");
-		Check(InspectorDescriptions.Find(typeof(DescriptionNode2DDemo), "Difficulty") == DifficultyText, "Node2D enum text");
-		Check(InspectorDescriptions.Find(typeof(DescriptionNode2DDemo), "Tint") == TintText, "Node2D color text");
-		Check(InspectorDescriptions.Find(typeof(DescriptionNode2DDemo), "Target") == TargetText, "Node2D node path text");
-		Check(InspectorDescriptions.Find(typeof(DescriptionNode2DDemo), "Sensitivity") == SensitivityText, "Node2D subgroup text");
-		Check(InspectorDescriptions.Find(typeof(DescriptionNode2DDemo), "Layer") == null, "Node2D undescribed member has no text");
-		Check(InspectorDescriptions.Find(typeof(DescriptionNode2DDemo), "Position") == null, "Inherited Node2D Position has no text");
+		CheckText(typeof(DescriptionToolDemo), "ToolPriority", ToolPriorityText, "Tool script text");
+		CheckText(typeof(DescriptionToolDemo), "ToolScale", ToolScaleText, "Tool script range text");
+		CheckText(typeof(DescriptionToolDemo), "ToolLabel", ToolLabelText, "Tool script string text");
+		CheckText(typeof(DescriptionToolDemo), "ToolActive", null, "Tool script undescribed member has no text");
+		CheckText(typeof(DescriptionNode2DDemo), "Stats", StatsText, "Node2D resource text");
+		CheckText(typeof(DescriptionNode2DDemo), "Difficulty", DifficultyText, "Node2D enum text");
+		CheckText(typeof(DescriptionNode2DDemo), "Tint", TintText, "Node2D color text");
+		CheckText(typeof(DescriptionNode2DDemo), "Target", TargetText, "Node2D node path text");
+		CheckText(typeof(DescriptionNode2DDemo), "Sensitivity", SensitivityText, "Node2D subgroup text");
+		CheckText(typeof(DescriptionNode2DDemo), "Layer", null, "Node2D undescribed member has no text");
+		CheckText(typeof(DescriptionNode2DDemo), "Position", null, "Inherited Node2D Position has no text");
 	}
 
 	// Adds the scene to the tree so NodePath references resolve, as they do when run with F6.
@@ -134,14 +134,14 @@ public partial class InspectorDescriptionChecks : Node
 		Check(gdNode.Get("max_health").AsInt64() == 120, "Scene overrides GDScript max_health");
 
 		// Real instance inside the scene: GetType() is the script class.
-		Check(InspectorDescriptions.Find(toolNode, "ToolPriority") == ToolPriorityText, "Scene tool node text");
-		Check(InspectorDescriptions.Find(toolNode, "ToolActive") == null, "Scene tool node undescribed member");
+		CheckText(InspectorDescriptions.ResolveType(toolNode), "ToolPriority", ToolPriorityText, "Scene tool node text");
+		CheckText(InspectorDescriptions.ResolveType(toolNode), "ToolActive", null, "Scene tool node undescribed member");
 
 		// Native Node2D names and GDScript members must get no text.
-		Check(InspectorDescriptions.Find(holder, "position") == null, "Native position has no text");
-		Check(InspectorDescriptions.Find(holder, "Position") == null, "C# Position has no text");
-		Check(InspectorDescriptions.Find(gdNode, "max_health") == null, "GDScript max_health has no text");
-		Check(InspectorDescriptions.Find(gdNode, "move_speed") == null, "GDScript move_speed has no text");
+		CheckText(InspectorDescriptions.ResolveType(holder), "position", null, "Native position has no text");
+		CheckText(InspectorDescriptions.ResolveType(holder), "Position", null, "C# Position has no text");
+		CheckText(InspectorDescriptions.ResolveType(gdNode), "max_health", null, "GDScript max_health has no text");
+		CheckText(InspectorDescriptions.ResolveType(gdNode), "move_speed", null, "GDScript move_speed has no text");
 		Check(gdNode.GetScript().As<Script>().ResourcePath == GdScriptPath, "GDScript node uses gdscript_compare.gd");
 
 		// Stats: the shared .tres on Node2DHolder, a separate embedded copy on InlineResourceHolder.
@@ -163,6 +163,22 @@ public partial class InspectorDescriptionChecks : Node
 		T child = parent.GetNodeOrNull(name) as T;
 		Check(child != null, $"Child {name} exists as {typeof(T).Name}");
 		return child;
+	}
+
+	// Checks both the label and the tooltip of a member; null means the member has no text.
+	private static void CheckText(Type type, string memberName, string expected, string message)
+	{
+		Check(LabelText(type, memberName) == expected && TooltipText(type, memberName) == expected, message);
+	}
+
+	private static string LabelText(Type type, string memberName)
+	{
+		return InspectorDescriptions.Find<InspectorLabelAttribute>(type, memberName)?.Text;
+	}
+
+	private static string TooltipText(Type type, string memberName)
+	{
+		return InspectorDescriptions.Find<InspectorTooltipAttribute>(type, memberName)?.Text;
 	}
 
 	private static void Check(bool condition, string message)

@@ -1,3 +1,4 @@
+// Finds InspectorLabel and InspectorTooltip attributes on members of C# Godot scripts.
 using System;
 using System.Collections.Generic;
 using System.Reflection;
@@ -6,7 +7,7 @@ using Godot;
 namespace CSharpInspectorDescription;
 
 /// <summary>
-/// Looks up InspectorDescription text for members of C# Godot scripts.
+/// Looks up Inspector attributes for members of C# Godot scripts.
 /// </summary>
 public static class InspectorDescriptions
 {
@@ -18,8 +19,8 @@ public static class InspectorDescriptions
 	// Built lazily: it scans every type, and lookups run once per Inspector property.
 	private static Dictionary<string, Type> _scriptTypes;
 
-	/// <summary>Returns the description of a member declared on the type or on a base class.</summary>
-	public static string Find(Type type, string memberName)
+	/// <summary>Returns the attribute of type T on a member declared on the type or on a base class, or null.</summary>
+	public static T Find<T>(Type type, string memberName) where T : Attribute
 	{
 		if (type == null || string.IsNullOrEmpty(memberName))
 		{
@@ -35,11 +36,11 @@ public static class InspectorDescriptions
 				continue;
 			}
 
-			// Without text here, keep walking so an override can reuse the base description.
-			InspectorDescriptionAttribute attribute = member.GetCustomAttribute<InspectorDescriptionAttribute>(false);
+			// Without the attribute here, keep walking so an override can reuse the base text.
+			T attribute = member.GetCustomAttribute<T>(false);
 			if (attribute != null)
 			{
-				return attribute.Text;
+				return attribute;
 			}
 		}
 
@@ -58,8 +59,8 @@ public static class InspectorDescriptions
 		return _scriptTypes.TryGetValue(scriptResourcePath, out Type type) ? type : null;
 	}
 
-	/// <summary>Returns the description of a member of a Godot object, including editor placeholder instances.</summary>
-	public static string Find(GodotObject obj, string memberName)
+	/// <summary>Returns the C# script class of a Godot object, including editor placeholder instances, or null.</summary>
+	public static Type ResolveType(GodotObject obj)
 	{
 		if (obj == null)
 		{
@@ -70,18 +71,12 @@ public static class InspectorDescriptions
 		if (type.Assembly != typeof(GodotObject).Assembly)
 		{
 			// A real C# instance exposes its own script class.
-			return Find(type, memberName);
+			return type;
 		}
 
 		// Editor placeholders only expose the native class, so find the script class by its path.
 		Script script = obj.GetScript().As<Script>();
-		if (script == null)
-		{
-			return null;
-		}
-
-		Type scriptType = ResolveScriptType(script.ResourcePath);
-		return scriptType == null ? null : Find(scriptType, memberName);
+		return script == null ? null : ResolveScriptType(script.ResourcePath);
 	}
 
 	private static Dictionary<string, Type> BuildScriptTypeMap()
