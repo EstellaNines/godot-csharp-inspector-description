@@ -6,6 +6,12 @@ The format follows [Keep a Changelog 1.1.0](https://keepachangelog.com/en/1.1.0/
 
 ## [Unreleased]
 
+## [1.1.0] - 2026-11-20
+
+### Added
+
+- Dimmed description label above each described property, shown together with the hover tooltip.
+
 ## [1.0.0] - 2026-11-20
 
 ### Added
@@ -17,5 +23,6 @@ The format follows [Keep a Changelog 1.1.0](https://keepachangelog.com/en/1.1.0/
 - Headless checks (`tests/InspectorDescriptionChecks.tscn`) and a GitHub Actions workflow that runs them with Godot 4.7.2 .NET.
 - MIT license, and English and Chinese README files.
 
-[Unreleased]: https://github.com/EstellaNines/godot-csharp-inspector-description/compare/v1.0.0...HEAD
+[Unreleased]: https://github.com/EstellaNines/godot-csharp-inspector-description/compare/v1.1.0...HEAD
+[1.1.0]: https://github.com/EstellaNines/godot-csharp-inspector-description/compare/v1.0.0...v1.1.0
 [1.0.0]: https://github.com/EstellaNines/godot-csharp-inspector-description/releases/tag/v1.0.0
